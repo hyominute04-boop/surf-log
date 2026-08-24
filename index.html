@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>서핑일지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light;
+    --bg-a:#FDF6EA;
+    --bg-b:#EAF6F2;
+    --surface:#FFFFFF;
+    --surface-2:#F3F8F4;
+    --text:#16323E;
+    --text-2:#5C7480;
+    --text-faint:#93A6AD;
+    --line:rgba(22,50,62,0.13);
+    --line-strong:rgba(22,50,62,0.26);
+    --sun:#FF7A45;
+    --sun-dim:rgba(255,122,69,0.14);
+    --sun-text:#B8471E;
+    --wave:#189380;
+    --wave-dim:rgba(24,147,128,0.10);
+    --wave-text:#0F6E5D;
+    --danger:#D6432E;
+    --danger-dim:rgba(214,67,46,0.10);
+    --radius:14px;
+    --font-display:'Song Myung', serif;
+    --font-body:'Noto Sans KR', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scrollbar-color:rgba(22,50,62,0.35) transparent; scrollbar-width:thin;}
+  ::-webkit-scrollbar{width:10px; height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(22,50,62,0.28); border-radius:6px;}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(22,50,62,0.44);}
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    color:var(--text);
+    background:
+      radial-gradient(ellipse 900px 500px at 88% -8%, rgba(255,122,69,0.10), transparent 60%),
+      linear-gradient(170deg, var(--bg-a) 0%, var(--bg-b) 100%);
+    min-height:100vh;
+    line-height:1.6;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:40px 24px 80px;}
+
+  .header-row{display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; margin-bottom:28px;}
+  .eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:0.14em; color:var(--wave-text); text-transform:uppercase; margin:0 0 10px;}
+  h1{font-family:var(--font-display); font-weight:400; font-size:34px; margin:0 0 8px; color:var(--text); letter-spacing:0.01em;}
+  .sub{color:var(--text-2); font-size:14.5px; margin:0; max-width:480px;}
+  .hero-ill{width:170px; height:auto; flex-shrink:0;}
+  .ill-wave-back{fill:var(--wave-dim);}
+  .ill-wave-line{stroke:var(--wave); stroke-width:3; fill:none; stroke-linecap:round;}
+  .ill-surfer ellipse{fill:var(--sun);}
+  .ill-surfer path{stroke:var(--text); stroke-width:2.2; fill:none; stroke-linecap:round;}
+  .ill-surfer circle{fill:var(--text);}
+
+  .wave-divider{width:100%; height:18px; display:block; margin:6px 0 28px; overflow:visible;}
+  .wave-divider path{
+    fill:none; stroke:var(--wave); stroke-width:1.6; stroke-linecap:round;
+    stroke-dasharray:900; stroke-dashoffset:900;
+    animation:draw-wave 1.6s ease-out forwards; opacity:0.55;
+  }
+  @keyframes draw-wave{ to{ stroke-dashoffset:0; } }
+
+  .banner{background:var(--sun-dim); border:1px solid var(--sun); color:var(--sun-text); border-radius:11px; padding:12px 16px; font-size:13px; margin-bottom:20px;}
+
+  .grid{display:grid; grid-template-columns:320px 1fr; gap:24px; align-items:start;}
+  @media (max-width:760px){ .grid{grid-template-columns:1fr;} }
+
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:20px; box-shadow:0 1px 2px rgba(22,50,62,0.04);}
+
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .cal-head .month-label{font-family:var(--font-display); font-size:19px;}
+  .cal-nav{display:flex; gap:6px;}
+  .cal-nav button{background:transparent; border:1px solid var(--line-strong); color:var(--text); width:30px; height:30px; border-radius:8px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center;}
+  .cal-nav button:hover{background:var(--surface-2);}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center;}
+  .cal-dow{font-size:11px; color:var(--text-faint); padding:4px 0 8px; font-family:var(--font-mono);}
+  .cal-day{position:relative; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:9px; font-size:13px; cursor:pointer; color:var(--text-2); border:1px solid transparent;}
+  .cal-day.other-month{color:rgba(22,50,62,0.20); cursor:default;}
+  .cal-day:not(.other-month):hover{background:var(--surface-2); color:var(--text);}
+  .cal-day.today{border-color:var(--line-strong); color:var(--text);}
+  .cal-day.selected{background:var(--sun); color:#3A1608; font-weight:700;}
+  .cal-day.has-entry:not(.selected)::after{content:''; position:absolute; bottom:5px; width:4px; height:4px; border-radius:50%; background:var(--wave);}
+
+  .legend{margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:12px; color:var(--text-faint); display:flex; gap:14px; flex-wrap:wrap;}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--wave); display:inline-block;}
+
+  .date-title{font-family:var(--font-display); font-size:22px; margin:0 0 2px;}
+  .date-sub{color:var(--text-faint); font-size:13px; margin:0 0 18px; font-family:var(--font-mono);}
+
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;}
+  @media (max-width:520px){ .field-row{grid-template-columns:1fr;} }
+  .field label{display:block; font-size:12px; color:var(--text-2); margin-bottom:6px;}
+  select, input[type=text], input[type=number], input[type=time], textarea{
+    width:100%; background:var(--surface); border:1px solid var(--line-strong);
+    color:var(--text); border-radius:9px; padding:9px 10px; font-size:13.5px; font-family:var(--font-body);
+  }
+  select:focus, input:focus, textarea:focus{outline:none; border-color:var(--wave);}
+  textarea{resize:vertical; min-height:70px;}
+  .hint{font-size:11.5px; color:var(--text-faint); margin-top:5px;}
+  .hint.warn{color:var(--sun-text);}
+
+  .btn{border:1px solid var(--line-strong); background:var(--surface); color:var(--text); padding:10px 16px; border-radius:9px; font-size:13.5px; cursor:pointer; font-family:var(--font-body);}
+  .btn:hover{background:var(--surface-2);}
+  .btn-primary{background:var(--sun); border-color:var(--sun); color:#3A1608; font-weight:700;}
+  .btn-primary:hover{opacity:0.92; background:var(--sun);}
+  .btn-danger{border-color:var(--danger); color:var(--danger);}
+  .btn-danger:hover{background:var(--danger-dim);}
+  .btn-small{padding:6px 11px; font-size:12.5px;}
+  .btn:disabled{opacity:0.5; cursor:default;}
+
+  .ocean-card{background:var(--surface-2); border:1px solid var(--line); border-radius:11px; padding:16px; margin:14px 0 18px;}
+  .ocean-card .label{font-size:11px; color:var(--wave-text); font-family:var(--font-mono); letter-spacing:0.06em; margin-bottom:10px; text-transform:uppercase;}
+  .ocean-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; align-items:end;}
+  @media (max-width:520px){ .ocean-stats{grid-template-columns:repeat(2,1fr);} }
+  .ocean-stat .val{font-family:var(--font-mono); font-size:19px; color:var(--text); font-weight:600;}
+  .ocean-stat .k{font-size:11px; color:var(--text-faint); margin-top:2px;}
+  .ocean-msg{font-size:12.5px; color:var(--text-2);}
+  .ocean-msg.err{color:var(--sun-text);}
+  .compass{width:34px; height:34px; display:block; margin-bottom:4px;}
+  .compass-ring{fill:none; stroke:var(--line-strong); stroke-width:1;}
+  .compass-n{font-size:7px; fill:var(--text-faint); font-family:var(--font-mono);}
+  .compass-needle{stroke:var(--sun); stroke-width:2.4; stroke-linecap:round;}
+  .compass-dot{fill:var(--sun);}
+
+  .analysis-card{background:var(--surface-2); border:1px solid var(--wave); border-radius:11px; padding:16px; margin-top:14px;}
+  .analysis-card h4{font-family:var(--font-display); font-size:15.5px; margin:0 0 8px; color:var(--wave-text); font-weight:400;}
+  .analysis-card ul{margin:0 0 14px; padding-left:18px; font-size:13.5px; color:var(--text-2);}
+  .analysis-card li{margin-bottom:4px;}
+  .analysis-card p{font-size:13.5px; color:var(--text-2); margin:0 0 14px;}
+  .analysis-card .section:last-child{margin-bottom:0;}
+
+  .board-manager{margin-top:10px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px;}
+  .board-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid var(--line);}
+  .board-row:last-of-type{border-bottom:none;}
+  .board-row .b-name{font-size:13.5px; color:var(--text);}
+  .board-row .b-spec{font-size:12px; color:var(--text-faint);}
+  .board-add-row{display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin-top:10px;}
+  @media (max-width:520px){ .board-add-row{grid-template-columns:1fr;} }
+
+  .actions{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;}
+
+  .spinner{width:14px; height:14px; border-radius:50%; border:2px solid rgba(22,50,62,0.18); border-top-color:var(--wave); display:inline-block; animation:spin 0.7s linear infinite; margin-right:8px; vertical-align:-2px;}
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--text); color:var(--bg-a); padding:10px 18px; border-radius:9px; font-size:13px; opacity:0; pointer-events:none; transition:opacity 0.25s, transform 0.25s; z-index:20; max-width:80vw;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .history{margin-top:36px;}
+  .history h3{font-family:var(--font-display); font-size:19px; font-weight:400; margin:0 0 16px;}
+  .history-empty{color:var(--text-faint); font-size:13.5px;}
+  .h-card{background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:16px;}
+  .h-card:hover{border-color:var(--line-strong);}
+  .h-card .h-date{font-family:var(--font-mono); font-size:12.5px; color:var(--wave-text); min-width:78px;}
+  .h-card .h-main{flex:1; min-width:0;}
+  .h-card .h-loc{font-size:14px; color:var(--text); margin-bottom:2px;}
+  .h-card .h-preview{font-size:12.5px; color:var(--text-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .h-card .h-wave{font-family:var(--font-mono); font-size:13px; color:var(--text-2); white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header-row">
+    <div>
+      <p class="eyebrow">Personal surf log · vercel build 1</p>
+      <h1>서핑일지</h1>
+      <p class="sub">날짜를 고르면 그날의 파도·바람을 자동으로 불러와요. 세션 메모를 남기면 AI가 기술 분석 노트를 정리해드려요.</p>
+    </div>
+    <svg class="hero-ill" viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path class="ill-wave-back" d="M0 95 C 30 60 55 60 75 80 C 95 100 115 100 135 75 C 150 55 170 55 190 75 L200 140 L0 140 Z"/>
+      <path class="ill-wave-line" d="M0 95 C 30 60 55 60 75 80 C 95 100 115 100 135 75 C 150 55 170 55 190 75"/>
+      <g class="ill-surfer">
+        <ellipse cx="112" cy="78" rx="17" ry="4.5" transform="rotate(-18 112 78)"/>
+        <path d="M112 78 L107 54"/>
+        <circle cx="105" cy="48" r="4.5"/>
+        <path d="M108 58 L96 65"/>
+        <path d="M108 62 L120 57"/>
+      </g>
+    </svg>
+  </div>
+
+  <svg class="wave-divider" viewBox="0 0 900 20" preserveAspectRatio="none">
+    <path d="M0 10 Q 22.5 -2 45 10 T 90 10 T 135 10 T 180 10 T 225 10 T 270 10 T 315 10 T 360 10 T 405 10 T 450 10 T 495 10 T 540 10 T 585 10 T 630 10 T 675 10 T 720 10 T 765 10 T 810 10 T 855 10 T 900 10"/>
+  </svg>
+
+  <div id="storageBanner"></div>
+
+  <div class="grid">
+    <div class="panel" id="calPanel"></div>
+    <div class="panel" id="detailPanel"></div>
+  </div>
+
+  <div class="history">
+    <h3>세션 기록</h3>
+    <div id="historyList"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LOCATIONS = {
+  songjeong: { name: '송정해수욕장', lat: 35.1783, lon: 129.2019 },
+  dadaepo:   { name: '다대포해수욕장', lat: 35.0509, lon: 128.9649 },
+  pohang:    { name: '포항 신항만', lat: 36.0783, lon: 129.3897 },
+  jinha:     { name: '진하해수욕장', lat: 35.3987, lon: 129.3599 },
+  custom:    { name: '기타', lat: null, lon: null }
+};
+const DEFAULT_BOARDS = [
+  { id:'jenny', name:'제니', spec:"9.6ft 롱보드 싱글핀" },
+  { id:'roze',  name:'로제', spec:"9.4ft 롱보드 2+1핀" },
+  { id:'jisoo', name:'지수', spec:"8ft 스펀지보드 3핀" }
+];
+const COMPASS = ['북','북동','동','남동','남','남서','서','북서'];
+const degToCompass = d => COMPASS[Math.round((d % 360) / 45) % 8];
+const pad2 = n => String(n).padStart(2,'0');
+const toDateStr = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+
+/* Vercel API(/api/data)를 부르는 헬퍼 */
+async function apiGet(action, params={}){
+  const qs = new URLSearchParams({ action, ...params });
+  const res = await fetch('/api/data?' + qs.toString());
+  const json = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(json.error || ('API 오류 ' + res.status));
+  return json;
+}
+async function apiPost(body){
+  const res = await fetch('/api/data', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const json = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(json.error || ('API 오류 ' + res.status));
+  return json;
+}
+
+const state = {
+  viewYear: new Date().getFullYear(),
+  viewMonth: new Date().getMonth(),
+  selectedDate: toDateStr(new Date()),
+  entryDates: new Set(),
+  current: null,
+  oceanLoading: false,
+  oceanError: null,
+  analysisLoading: false,
+  boards: [],
+  boardManagerOpen: false,
+  tideLoading: false,
+  tideError: null
+};
+
+/* 조위 자동조회를 지원하는 지역 (국립해양조사원 관측소 매핑이 있는 곳만) */
+const TIDE_SUPPORTED = new Set(['songjeong', 'dadaepo']);
+
+function blankEntry(dateStr){
+  return {
+    date: dateStr,
+    locKey: 'songjeong',
+    customLat: '', customLon: '',
+    startTime: '06:00',
+    endTime: '08:00',
+    ocean: null,
+    tide: null,
+    boardId: (state.boards[0] && state.boards[0].id) || '',
+    boardLabel: (state.boards[0] ? `${state.boards[0].name} · ${state.boards[0].spec}` : ''),
+    duration: '',
+    note: '',
+    techniqueInput: '',
+    analysis: null
+  };
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+function minutesOf(t){
+  if(!t) return null;
+  const [h,m] = t.split(':').map(Number);
+  if(isNaN(h) || isNaN(m)) return null;
+  return h*60+m;
+}
+function computeDuration(startTime, endTime){
+  const s = minutesOf(startTime), e = minutesOf(endTime);
+  if(s === null || e === null) return null;
+  return e - s;
+}
+
+/* ---------- 기록 저장/조회 ---------- */
+async function saveEntry(entry){
+  try{
+    await apiPost({ action: 'saveEntry', entry });
+    state.entryDates.add(entry.date);
+    return true;
+  }catch(e){ console.error('save failed', e); return false; }
+}
+async function loadEntryFromStorage(dateStr){
+  try{
+    const { entry } = await apiGet('entry', { date: dateStr });
+    return entry || null;
+  }catch(e){ return null; }
+}
+async function deleteEntryFromStorage(dateStr){
+  try{ await apiPost({ action: 'deleteEntry', date: dateStr }); }catch(e){}
+  state.entryDates.delete(dateStr);
+}
+async function refreshEntryDates(){
+  try{
+    const { dates } = await apiGet('entries');
+    state.entryDates = new Set(dates || []);
+  }catch(e){ state.entryDates = new Set(); }
+}
+
+/* ---------- 보드 ---------- */
+async function initBoards(){
+  try{
+    const { boards } = await apiGet('boards');
+    state.boards = boards || DEFAULT_BOARDS.slice();
+  }catch(e){
+    state.boards = DEFAULT_BOARDS.slice();
+  }
+}
+async function addBoard(name, spec){
+  state.boards.push({ id: 'b' + Date.now(), name, spec });
+  try{ await apiPost({ action: 'saveBoards', boards: state.boards }); }catch(e){}
+  renderDetail();
+}
+async function deleteBoard(id){
+  state.boards = state.boards.filter(b => b.id !== id);
+  try{ await apiPost({ action: 'saveBoards', boards: state.boards }); }catch(e){}
+  renderDetail();
+}
+
+/* ---------- 파도/바람 (Open-Meteo, 클라이언트에서 직접 조회) ---------- */
+async function fetchOcean(dateStr, lat, lon, hour){
+  const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_direction,wave_period&timezone=Asia%2FSeoul&start_date=${dateStr}&end_date=${dateStr}`;
+  const windUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=windspeed_10m,winddirection_10m&windspeed_unit=ms&timezone=Asia%2FSeoul&start_date=${dateStr}&end_date=${dateStr}`;
+  const [mRes, wRes] = await Promise.all([fetch(marineUrl), fetch(windUrl)]);
+  if(!mRes.ok || !wRes.ok) throw new Error('fetch-failed');
+  const m = await mRes.json();
+  const w = await wRes.json();
+  const target = `${dateStr}T${hour}:00`;
+  const mi = m.hourly && m.hourly.time ? m.hourly.time.indexOf(target) : -1;
+  const wi = w.hourly && w.hourly.time ? w.hourly.time.indexOf(target) : -1;
+  if(mi === -1 || wi === -1) throw new Error('no-data-for-hour');
+  const waveHeight = m.hourly.wave_height[mi];
+  const wavePeriod = m.hourly.wave_period[mi];
+  const windSpeed = w.hourly.windspeed_10m[wi];
+  const windDirection = w.hourly.winddirection_10m[wi];
+  if([waveHeight, wavePeriod, windSpeed].some(v => v === null || v === undefined)){
+    throw new Error('null-values');
+  }
+  return { waveHeight, wavePeriod, windSpeed, windDirection, manual:false };
+}
+
+function startHour(entry){
+  const h = (entry.startTime || '06:00').split(':')[0];
+  return pad2(parseInt(h,10));
+}
+
+async function refreshOceanForCurrent(){
+  const e = state.current;
+  const loc = LOCATIONS[e.locKey];
+  const lat = e.locKey === 'custom' ? parseFloat(e.customLat) : loc.lat;
+  const lon = e.locKey === 'custom' ? parseFloat(e.customLon) : loc.lon;
+  if(e.locKey === 'custom' && (isNaN(lat) || isNaN(lon))){
+    state.oceanError = '위도/경도를 입력하면 자동조회할 수 있어요.';
+    e.ocean = null;
+    renderDetail();
+    return;
+  }
+  state.oceanLoading = true;
+  state.oceanError = null;
+  renderDetail();
+  try{
+    e.ocean = await fetchOcean(e.date, lat, lon, startHour(e));
+  }catch(err){
+    e.ocean = null;
+    state.oceanError = '이 날짜의 해양 데이터를 가져오지 못했어요. 너무 오래된 날짜이거나 예보 범위를 벗어났을 수 있어요. 아래에 직접 입력할 수 있어요.';
+  }finally{
+    state.oceanLoading = false;
+    renderDetail();
+  }
+  refreshTideForCurrent();
+}
+
+/* ---------- 조위 (서버의 getTideForSpot 호출, 국립해양조사원 공공데이터) ---------- */
+async function refreshTideForCurrent(){
+  const e = state.current;
+  if(!TIDE_SUPPORTED.has(e.locKey)){
+    e.tide = null;
+    state.tideError = null;
+    renderDetail();
+    return;
+  }
+  state.tideLoading = true;
+  state.tideError = null;
+  renderDetail();
+  try{
+    const { tide } = await apiGet('tide', { locKey: e.locKey, date: e.date, time: e.startTime });
+    e.tide = tide;
+  }catch(err){
+    e.tide = null;
+    state.tideError = (err && err.message) ? err.message : '조위 데이터를 가져오지 못했습니다. 다시 시도해주세요.';
+  }finally{
+    state.tideLoading = false;
+    renderDetail();
+  }
+}
+
+/* ---------- AI 분석 (서버의 generateAnalysisServer 호출) ---------- */
+async function generateAnalysis(){
+  const e = state.current;
+  if(!e.techniqueInput || !e.techniqueInput.trim()){
+    showToast('세션 메모를 먼저 적어주세요');
+    return;
+  }
+  state.analysisLoading = true;
+  renderDetail();
+
+  const loc = LOCATIONS[e.locKey].name;
+  const oceanText = e.ocean
+    ? `파고 ${e.ocean.waveHeight}m, 파도 주기 ${e.ocean.wavePeriod ?? '-'}초, 바람 ${e.ocean.windSpeed}m/s`
+    : '해양 데이터 없음';
+
+  const tideText = e.tide
+    ? `${e.tide.tideLevel}cm (${e.tide.actualOrPredicted}, ${e.tide.matchedTime || ''} 기준, 요청시간과 ${e.tide.matchedTimeDiffMinutes}분 차이)`
+    : (TIDE_SUPPORTED.has(e.locKey) ? '조위 데이터 없음' : '이 지역은 조위 자동조회 미지원');
+
+  const params = {
+    date: e.date,
+    location: loc,
+    oceanText: oceanText,
+    tideText: tideText,
+    boardLabel: e.boardLabel || '미기재',
+    startTime: e.startTime || '?',
+    endTime: e.endTime || '?',
+    techniqueInput: e.techniqueInput
+  };
+
+  try{
+    const { result } = await apiPost({ action: 'analyze', params });
+    e.analysis = JSON.parse(result);
+  }catch(err){
+    console.error(err);
+    showToast('분석 생성에 실패했어요: ' + (err && err.message ? err.message : '알 수 없는 오류'));
+  }finally{
+    state.analysisLoading = false;
+    renderDetail();
+  }
+}
+
+/* ---------- 캘린더 ---------- */
+function renderCalendar(){
+  const el = document.getElementById('calPanel');
+  const y = state.viewYear, m = state.viewMonth;
+  const first = new Date(y, m, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const daysInPrevMonth = new Date(y, m, 0).getDate();
+  const todayStr = toDateStr(new Date());
+
+  let cells = '';
+  for(let i=startDow-1; i>=0; i--){
+    cells += `<div class="cal-day other-month">${daysInPrevMonth - i}</div>`;
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr = `${y}-${pad2(m+1)}-${pad2(d)}`;
+    let cls = 'cal-day';
+    if(dateStr === todayStr) cls += ' today';
+    if(dateStr === state.selectedDate) cls += ' selected';
+    if(state.entryDates.has(dateStr)) cls += ' has-entry';
+    cells += `<div class="${cls}" data-date="${dateStr}">${d}</div>`;
+  }
+  const totalCells = startDow + daysInMonth;
+  const trailing = (7 - (totalCells % 7)) % 7;
+  for(let d=1; d<=trailing; d++){
+    cells += `<div class="cal-day other-month">${d}</div>`;
+  }
+
+  el.innerHTML = `
+    <div class="cal-head">
+      <div class="month-label">${y}년 ${m+1}월</div>
+      <div class="cal-nav">
+        <button id="prevMonth">‹</button>
+        <button id="nextMonth">›</button>
+      </div>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-dow">일</div><div class="cal-dow">월</div><div class="cal-dow">화</div>
+      <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow">토</div>
+      ${cells}
+    </div>
+    <div class="legend"><span><span class="dot"></span>기록 있는 날</span></div>
+  `;
+
+  document.getElementById('prevMonth').onclick = () => {
+    state.viewMonth--;
+    if(state.viewMonth < 0){ state.viewMonth = 11; state.viewYear--; }
+    renderCalendar();
+  };
+  document.getElementById('nextMonth').onclick = () => {
+    state.viewMonth++;
+    if(state.viewMonth > 11){ state.viewMonth = 0; state.viewYear++; }
+    renderCalendar();
+  };
+  el.querySelectorAll('.cal-day[data-date]').forEach(cellEl => {
+    cellEl.onclick = () => selectDate(cellEl.dataset.date);
+  });
+}
+
+async function selectDate(dateStr){
+  state.selectedDate = dateStr;
+  renderCalendar();
+  const existing = await loadEntryFromStorage(dateStr);
+  state.current = existing || blankEntry(dateStr);
+  state.oceanError = null;
+  renderDetail();
+  if(!existing){
+    refreshOceanForCurrent();
+  }
+}
+
+/* ---------- 나침반 ---------- */
+function compassSvg(deg){
+  const d = deg == null ? 0 : deg;
+  return `
+    <svg class="compass" viewBox="0 0 40 40">
+      <circle class="compass-ring" cx="20" cy="20" r="17"/>
+      <text class="compass-n" x="20" y="8" text-anchor="middle">N</text>
+      <g style="transform-origin:20px 20px; transform:rotate(${d}deg)">
+        <line class="compass-needle" x1="20" y1="20" x2="20" y2="8"/>
+        <circle class="compass-dot" cx="20" cy="20" r="2"/>
+      </g>
+    </svg>`;
+}
+
+/* ---------- 상세 패널 ---------- */
+function renderDetail(){
+  const el = document.getElementById('detailPanel');
+  const e = state.current;
+  if(!e){ el.innerHTML = ''; return; }
+
+  const d = new Date(e.date + 'T00:00:00');
+  const dateLabel = d.toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+
+  const locOptions = Object.entries(LOCATIONS).map(([k,v]) =>
+    `<option value="${k}" ${e.locKey===k?'selected':''}>${v.name}</option>`).join('');
+
+  let customLocFields = '';
+  if(e.locKey === 'custom'){
+    customLocFields = `
+      <div class="field-row">
+        <div class="field"><label>위도</label><input type="text" id="customLat" value="${e.customLat}" placeholder="35.1783"></div>
+        <div class="field"><label>경도</label><input type="text" id="customLon" value="${e.customLon}" placeholder="129.2019"></div>
+      </div>`;
+  }
+
+  const duration = computeDuration(e.startTime, e.endTime);
+  let durationHint = '';
+  if(duration === null){ durationHint = ''; }
+  else if(duration <= 0){ durationHint = `<div class="hint warn">종료 시간이 시작 시간보다 빠른 것 같아요</div>`; }
+  else { durationHint = `<div class="hint">세션 시간 약 ${duration}분</div>`; }
+
+  let oceanHtml = '';
+  if(state.oceanLoading){
+    oceanHtml = `<div class="ocean-card"><div class="label">그날의 바다</div><div class="ocean-msg"><span class="spinner"></span>조회 중...</div></div>`;
+  } else if(e.ocean){
+    oceanHtml = `
+      <div class="ocean-card">
+        <div class="label">그날의 바다 (${e.startTime} 기준) ${e.ocean.manual ? '· 직접 입력' : '· 자동조회'}</div>
+        <div class="ocean-stats">
+          <div class="ocean-stat"><div class="val">${e.ocean.waveHeight}m</div><div class="k">파고</div></div>
+          <div class="ocean-stat"><div class="val">${e.ocean.wavePeriod ?? '-'}${e.ocean.wavePeriod!=null?'s':''}</div><div class="k">파도 주기</div></div>
+          <div class="ocean-stat">
+            ${e.ocean.windDirection!=null ? compassSvg(e.ocean.windDirection) : ''}
+            <div class="val">${e.ocean.windSpeed}m/s</div><div class="k">바람${e.ocean.windDirection!=null?' · '+degToCompass(e.ocean.windDirection):''}</div>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    oceanHtml = `
+      <div class="ocean-card">
+        <div class="label">그날의 바다</div>
+        <div class="ocean-msg err">${state.oceanError || '아직 조회하지 않았어요.'}</div>
+        <div class="field-row" style="margin-top:12px;">
+          <div class="field"><label>파고 직접입력 (m)</label><input type="number" step="0.1" id="manualWave"></div>
+          <div class="field"><label>바람 직접입력 (m/s)</label><input type="number" step="0.1" id="manualWind"></div>
+        </div>
+        <button class="btn btn-small" id="applyManualOcean" style="margin-top:6px;">직접 입력값 반영</button>
+      </div>`;
+  }
+
+  let tideHtml = '';
+  if(!TIDE_SUPPORTED.has(e.locKey)){
+    tideHtml = `<div class="ocean-card"><div class="label">조위</div><div class="ocean-msg">이 지역은 아직 조위 자동조회를 지원하지 않아요 (부산 인근 관측소만 매핑됨).</div></div>`;
+  } else if(state.tideLoading){
+    tideHtml = `<div class="ocean-card"><div class="label">조위</div><div class="ocean-msg"><span class="spinner"></span>조회 중...</div></div>`;
+  } else if(e.tide){
+    tideHtml = `
+      <div class="ocean-card">
+        <div class="label">조위 · 부산 관측소 근사값</div>
+        <div class="ocean-stats" style="grid-template-columns:repeat(2,1fr);">
+          <div class="ocean-stat"><div class="val">${e.tide.tideLevel}cm</div><div class="k">${e.tide.actualOrPredicted === 'observed' || e.tide.actualOrPredicted === '실측' ? '실측' : '예측'}</div></div>
+          <div class="ocean-stat"><div class="val">${e.tide.matchedTime || '-'}</div><div class="k">기준시각 (요청시간과 ${e.tide.matchedTimeDiffMinutes ?? '-'}분 차이)</div></div>
+        </div>
+      </div>`;
+  } else if(state.tideError){
+    tideHtml = `
+      <div class="ocean-card">
+        <div class="label">조위</div>
+        <div class="ocean-msg err">${state.tideError}</div>
+        <button class="btn btn-small" id="retryTideBtn" style="margin-top:8px;">다시 시도</button>
+      </div>`;
+  }
+
+  const boardOptions = state.boards.map(b =>
+    `<option value="${b.id}" ${e.boardId===b.id?'selected':''}>${escapeHtml(b.name)} · ${escapeHtml(b.spec)}</option>`).join('');
+
+  let boardManagerHtml = '';
+  if(state.boardManagerOpen){
+    const rows = state.boards.map(b => `
+      <div class="board-row">
+        <div><span class="b-name">${escapeHtml(b.name)}</span> <span class="b-spec">${escapeHtml(b.spec)}</span></div>
+        <button class="btn btn-small btn-danger" data-del-board="${b.id}">삭제</button>
+      </div>`).join('') || `<div class="hint">등록된 보드가 없어요.</div>`;
+    boardManagerHtml = `
+      <div class="board-manager">
+        ${rows}
+        <div class="board-add-row">
+          <input type="text" id="newBoardName" placeholder="이름 (예: 몰리)">
+          <input type="text" id="newBoardSpec" placeholder="스펙 (예: 7.0ft 펀보드)">
+          <button class="btn btn-small" id="addBoardBtn">추가</button>
+        </div>
+      </div>`;
+  }
+
+  let analysisHtml = '';
+  if(state.analysisLoading){
+    analysisHtml = `<div class="analysis-card"><div class="ocean-msg"><span class="spinner"></span>기술 분석 생성 중...</div></div>`;
+  } else if(e.analysis){
+    const a = e.analysis;
+    analysisHtml = `
+      <div class="analysis-card">
+        <div class="section">
+          <h4>좋았던 신호</h4>
+          <ul>${(a.goodSigns||[]).map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>
+        </div>
+        <div class="section">
+          <h4>부족했을 가능성 구간</h4>
+          <p>${escapeHtml(a.gapAnalysis||'')}</p>
+        </div>
+        <div class="section">
+          <h4>다음 세션 포인트</h4>
+          <ul>${(a.nextFocus||[]).map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>
+        </div>
+      </div>`;
+  }
+
+  el.innerHTML = `
+    <div class="date-title">${dateLabel}</div>
+    <div class="date-sub">${e.date}</div>
+
+    <div class="field" style="margin-bottom:12px;">
+      <label>장소</label><select id="locSelect">${locOptions}</select>
+    </div>
+    ${customLocFields}
+
+    <div class="field-row">
+      <div class="field"><label>시작 시간</label><input type="time" id="startTimeInput" value="${e.startTime}"></div>
+      <div class="field"><label>종료 시간</label><input type="time" id="endTimeInput" value="${e.endTime}"></div>
+    </div>
+    ${durationHint}
+
+    ${oceanHtml}
+    ${tideHtml}
+
+    <div class="field" style="margin-bottom:6px;">
+      <label>보드</label>
+      <select id="boardSelect">${boardOptions}</select>
+    </div>
+    <button class="btn btn-small" id="toggleBoardManager" style="margin-bottom:12px;">${state.boardManagerOpen ? '보드 관리 닫기' : '+ 보드 관리'}</button>
+    ${boardManagerHtml}
+
+    <div class="field" style="margin-bottom:12px;">
+      <label>후기</label>
+      <textarea id="noteInput" placeholder="자유롭게 오늘 세션 후기를 남겨보세요">${escapeHtml(e.note)}</textarea>
+    </div>
+
+    <div class="field" style="margin-bottom:10px;">
+      <label>기술노트 · 세션 메모</label>
+      <textarea id="techniqueInput" placeholder="예: 가슴 붙이고 미끄러지는 느낌까진 좋았는데, 뒷부분이 갑자기 들리면서 노즈가 박혔어요">${escapeHtml(e.techniqueInput)}</textarea>
+    </div>
+    <button class="btn" id="genAnalysisBtn" ${state.analysisLoading?'disabled':''}>AI 분석 생성</button>
+
+    ${analysisHtml}
+
+    <div class="actions">
+      <button class="btn btn-primary" id="saveBtn">저장</button>
+      <button class="btn btn-danger" id="deleteBtn">이 날짜 기록 삭제</button>
+    </div>
+  `;
+
+  document.getElementById('locSelect').onchange = (ev) => {
+    e.locKey = ev.target.value;
+    e.ocean = null;
+    e.tide = null;
+    renderDetail();
+    if(e.locKey !== 'custom') refreshOceanForCurrent();
+    else refreshTideForCurrent();
+  };
+  if(e.locKey === 'custom'){
+    const latEl = document.getElementById('customLat');
+    const lonEl = document.getElementById('customLon');
+    latEl.onchange = () => { e.customLat = latEl.value; };
+    lonEl.onchange = () => { e.customLon = lonEl.value; refreshOceanForCurrent(); };
+    latEl.onblur = () => refreshOceanForCurrent();
+  }
+  document.getElementById('startTimeInput').onchange = (ev) => {
+    e.startTime = ev.target.value;
+    e.ocean = null;
+    renderDetail();
+    refreshOceanForCurrent();
+  };
+  document.getElementById('endTimeInput').onchange = (ev) => {
+    e.endTime = ev.target.value;
+    renderDetail();
+  };
+  const applyManualBtn = document.getElementById('applyManualOcean');
+  if(applyManualBtn){
+    applyManualBtn.onclick = () => {
+      const wv = parseFloat(document.getElementById('manualWave').value);
+      const wd = parseFloat(document.getElementById('manualWind').value);
+      if(isNaN(wv) && isNaN(wd)){ showToast('값을 입력해주세요'); return; }
+      e.ocean = { waveHeight: isNaN(wv)?null:wv, wavePeriod:null, windSpeed: isNaN(wd)?null:wd, windDirection:null, manual:true };
+      renderDetail();
+    };
+  }
+  const retryTideBtn = document.getElementById('retryTideBtn');
+  if(retryTideBtn){ retryTideBtn.onclick = () => refreshTideForCurrent(); }
+  document.getElementById('boardSelect').onchange = (ev) => {
+    e.boardId = ev.target.value;
+    const b = state.boards.find(x => x.id === e.boardId);
+    e.boardLabel = b ? `${b.name} · ${b.spec}` : '';
+  };
+  document.getElementById('toggleBoardManager').onclick = () => {
+    state.boardManagerOpen = !state.boardManagerOpen;
+    renderDetail();
+  };
+  const addBoardBtn = document.getElementById('addBoardBtn');
+  if(addBoardBtn){
+    addBoardBtn.onclick = async () => {
+      const nameEl = document.getElementById('newBoardName');
+      const specEl = document.getElementById('newBoardSpec');
+      const name = nameEl.value.trim(), spec = specEl.value.trim();
+      if(!name){ showToast('보드 이름을 입력해주세요'); return; }
+      await addBoard(name, spec);
+    };
+  }
+  el.querySelectorAll('[data-del-board]').forEach(btn => {
+    btn.onclick = async () => { await deleteBoard(btn.dataset.delBoard); };
+  });
+  document.getElementById('noteInput').onchange = (ev) => { e.note = ev.target.value; };
+  document.getElementById('techniqueInput').onchange = (ev) => { e.techniqueInput = ev.target.value; };
+  document.getElementById('genAnalysisBtn').onclick = generateAnalysis;
+  document.getElementById('saveBtn').onclick = async () => {
+    syncFieldsIntoCurrent();
+    const dur = computeDuration(e.startTime, e.endTime);
+    e.duration = (dur !== null && dur > 0) ? dur : '';
+    const ok = await saveEntry(e);
+    if(ok){ showToast('저장했어요'); renderCalendar(); renderHistory(); }
+    else{ showToast('저장에 실패했어요. 잠시 후 다시 시도해주세요.'); }
+  };
+  document.getElementById('deleteBtn').onclick = async () => {
+    await deleteEntryFromStorage(e.date);
+    showToast('삭제했어요');
+    state.current = blankEntry(e.date);
+    renderCalendar();
+    renderDetail();
+    renderHistory();
+  };
+}
+
+function syncFieldsIntoCurrent(){
+  const e = state.current;
+  const note = document.getElementById('noteInput');
+  const tech = document.getElementById('techniqueInput');
+  if(note) e.note = note.value;
+  if(tech) e.techniqueInput = tech.value;
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- 기록 리스트 ---------- */
+async function renderHistory(){
+  const el = document.getElementById('historyList');
+  const dates = Array.from(state.entryDates).sort().reverse();
+  if(dates.length === 0){
+    el.innerHTML = `<div class="history-empty">아직 기록이 없어요. 캘린더에서 날짜를 선택하고 저장해보세요.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="ocean-msg"><span class="spinner"></span>불러오는 중...</div>`;
+  const entries = await Promise.all(dates.slice(0, 60).map(d => loadEntryFromStorage(d)));
+  el.innerHTML = entries.filter(Boolean).map(e => {
+    const loc = LOCATIONS[e.locKey] ? LOCATIONS[e.locKey].name : e.locKey;
+    const wave = e.ocean && e.ocean.waveHeight != null ? `${e.ocean.waveHeight}m` : '-';
+    const preview = e.analysis && e.analysis.goodSigns && e.analysis.goodSigns[0]
+      ? e.analysis.goodSigns[0]
+      : (e.note || e.techniqueInput || '');
+    return `
+      <div class="h-card" data-date="${e.date}">
+        <div class="h-date">${e.date}</div>
+        <div class="h-main">
+          <div class="h-loc">${loc}${e.boardLabel ? ' · ' + escapeHtml(e.boardLabel) : ''}</div>
+          <div class="h-preview">${escapeHtml(preview)}</div>
+        </div>
+        <div class="h-wave">${wave}</div>
+      </div>`;
+  }).join('');
+  el.querySelectorAll('.h-card').forEach(card => {
+    card.onclick = () => {
+      const dt = card.dataset.date;
+      const dd = new Date(dt + 'T00:00:00');
+      state.viewYear = dd.getFullYear();
+      state.viewMonth = dd.getMonth();
+      selectDate(dt);
+      window.scrollTo({ top:0, behavior:'smooth' });
+    };
+  });
+}
+
+/* ---------- 초기화 ---------- */
+(async function init(){
+  try{
+    await initBoards();
+    await refreshEntryDates();
+    renderCalendar();
+    await selectDate(state.selectedDate);
+    renderHistory();
+  }catch(err){
+    console.error('init failed', err);
+    const msg = (err && err.message) ? err.message : String(err);
+    const box = `<div class="banner" style="margin:0;">앱을 불러오는 중 오류가 났어요.<br><br><b>오류 내용:</b> ${escapeHtml(msg)}</div>`;
+    const calEl = document.getElementById('calPanel');
+    const detEl = document.getElementById('detailPanel');
+    if(calEl) calEl.innerHTML = box;
+    if(detEl) detEl.innerHTML = '';
+  }
+})();
+</script>
+</body>
+</html>
